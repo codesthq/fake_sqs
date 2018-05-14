@@ -20,6 +20,13 @@ RSpec.describe "Actions for Queues", :sqs do
     expect(response.queue_url).to eq "http://0.0.0.0:4568/test-get-queue-url"
   end
 
+  specify "TagQueue" do
+    response = sqs.create_queue(queue_name: "test-queue")
+    response2 = sqs.tag_queue(queue_url: response.queue_url, tags: { 'Environment' => 'test' })
+
+    expect(response2).to be_successful
+  end
+
   specify "ListQueues" do
     sqs.create_queue(queue_name: "test-list-1")
     sqs.create_queue(queue_name: "test-list-2")
@@ -45,7 +52,7 @@ RSpec.describe "Actions for Queues", :sqs do
     source_queue_urls = []
     2.times do |time|
       queue_url = sqs.create_queue(queue_name: "source-list-#{time}").queue_url
-      sqs.set_queue_attributes(queue_url: queue_url, 
+      sqs.set_queue_attributes(queue_url: queue_url,
         attributes: {
           "RedrivePolicy" => "{\"deadLetterTargetArn\":\"#{dlq_arn}\",\"maxReceiveCount\":10}"
         }
